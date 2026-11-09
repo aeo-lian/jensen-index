@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Jensen Index</title>
+<style>:root{--color-fg:#1c1b19;--color-fg-muted:#6b6862;--color-bg:#faf9f6;--color-panel:#fff;--color-border-line:#e3e0d8;--color-ok:#2f7d4f;--color-warn:#a8650a;--color-bad:#b3372e;
+--font-anthropic-sans:system-ui,-apple-system,"Segoe UI",sans-serif;--font-anthropic-serif:Georgia,"Times New Roman",serif;
+--cds-font-size-caption:.8rem;--cds-font-size-body:.95rem;--cds-font-size-heading:1.2rem;--cds-font-size-title:2.4rem;--cds-font-weight-medium:600;
+--cds-gap-xs:4px;--cds-gap-sm:8px;--cds-gap-md:16px;--cds-gap-lg:24px;--cds-gap-xl:40px;--cds-pad-lg:20px;--cds-radius:10px;
+--cds-text-secondary:#6b6862;--cds-chart-status-critical:#c2443a;--cds-chart-axis:#b9b5ab;--cds-surface-popover:#fff;--cds-border:#e3e0d8;--cds-shadow-popover:0 4px 16px rgba(0,0,0,.12);--series-1:#3d6fb4}
+@media (prefers-color-scheme: dark){:root{--color-fg:#eceae4;--color-fg-muted:#a09c93;--color-bg:#171614;--color-panel:#211f1c;--color-border-line:#37342f;--color-ok:#6cc08b;--color-warn:#e0a54a;--cds-text-secondary:#a09c93;--cds-chart-status-critical:#e8695f;--cds-chart-axis:#5a564e;--cds-surface-popover:#2a2824;--cds-border:#3f3b35;--cds-shadow-popover:0 4px 16px rgba(0,0,0,.5);--series-1:#7aa7e6}}
+body{margin:0;background:var(--color-bg);color:var(--color-fg)}
+main{max-width:960px;margin:0 auto;padding:40px 16px 64px}
+.ji-src{font-size:var(--cds-font-size-caption);color:var(--color-fg-muted);line-height:1.6}.ji-src a{color:inherit}
+
+  .ji { display: grid; gap: var(--cds-gap-xl); font-family: var(--font-anthropic-sans); color: var(--color-fg); }
+  .ji-kicker { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); letter-spacing: .08em; text-transform: uppercase; margin: 0 0 var(--cds-gap-xs); }
+  .ji-title { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; }
+  .ji-take { font-size: var(--cds-font-size-heading); line-height: 1.4; margin: var(--cds-gap-sm) 0 0; max-width: 46em; }
+  .ji-take b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .ji-asof { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: var(--cds-gap-sm) 0 0; }
+  .ji-cards { display: grid; gap: var(--cds-gap-md); grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+  .ji-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); }
+  .ji-card h2 { font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); margin: 0; }
+  .ji-tag { display: inline-block; font-size: var(--cds-font-size-caption); border: 1px solid var(--color-border-line); border-radius: 999px; padding: 1px 8px; margin-left: 6px; color: var(--color-fg-muted); font-weight: 400; }
+  .ji-tag.real { color: var(--color-ok); }
+  .ji-tag.fake { color: var(--color-warn); }
+  .ji-big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: 2.6rem; line-height: 1.1; margin: var(--cds-gap-sm) 0 var(--cds-gap-xs); font-variant-numeric: tabular-nums; }
+  .ji-big small { font-family: var(--font-anthropic-sans); font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin-left: 4px; }
+  .ji-card p { font-size: var(--cds-font-size-body); color: var(--color-fg-muted); margin: 0; line-height: 1.45; }
+  .ji-card p b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .ji-section h2 { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); margin: 0 0 var(--cds-gap-xs); }
+  .ji-section > p { color: var(--color-fg-muted); margin: 0 0 var(--cds-gap-md); max-width: 52em; line-height: 1.45; }
+  .ji-section > p b { color: var(--color-fg); font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+  .ji-chart { position: relative; min-height: 220px; color: var(--color-fg-muted); }
+  .ji-chart svg { display: block; }
+  .ji-chart .lab { fill: var(--color-fg); font-size: var(--cds-font-size-body); }
+  .ji-chart .val { fill: var(--cds-text-secondary); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+  .ji-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); box-shadow: var(--cds-shadow-popover); border-radius: var(--cds-radius); padding: 6px 10px; font-size: var(--cds-font-size-caption); color: var(--color-fg); max-width: 240px; }
+  .ji-tip span { display: block; color: var(--cds-text-secondary); }
+  .ji-scroll { overflow-x: auto; }
+  .ji-table { border-collapse: collapse; width: 100%; font-size: var(--cds-font-size-body); }
+  .ji-table th { text-align: left; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); padding: 6px 12px 6px 0; border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+  .ji-table td { padding: 8px 12px 8px 0; border-bottom: 1px solid var(--color-border-line); vertical-align: top; }
+  .ji-table td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .ji-table td.note { color: var(--color-fg-muted); }
+  .ji-foot summary { cursor: pointer; color: var(--color-fg-muted); font-size: var(--cds-font-size-body); }
+  .ji-foot p { color: var(--color-fg-muted); font-size: var(--cds-font-size-body); max-width: 52em; line-height: 1.45; }
+  [data-dash-source-state=refreshing] { opacity: .5; }
+</style>
+</head>
+<body>
+<main>
+<div class="ji">
+  <header id="top">
+    <p class="ji-kicker">A deeply unserious benchmark, built on real numbers</p>
+    <h1 class="ji-title">The Jensen Index</h1>
+    <p class="ji-take">On the first trading day after the news, Nvidia closed <b data-draw="t-nvda" data-source="market" data-field="value" data-where="key=nvda_move">—</b> while the chip index rose <b data-draw="t-sox" data-source="market" data-field="value" data-where="key=sox_move">—</b>. That gap is the Jensen Spread: <b data-draw="t-spread" data-source="jensen" data-field="value" data-where="metric=spread_pts">—</b>.</p>
+    <p class="ji-asof">As of the close on Monday, November 9, 2026. Every input is a published figure with its source listed below. Nobody publishes a total count of memes, so the meme figures count only what has been documented and are floors.</p>
+  </header>
+
+  <section class="ji-cards" id="indices">
+    <article class="ji-card" id="card-spread">
+      <h2>Jensen Spread <span class="ji-tag real">closing prices</span></h2>
+      <div class="ji-big"><span data-draw="spread" data-source="jensen" data-field="value" data-where="metric=spread_pts">—</span><small>pts</small></div>
+      <p>Nvidia's one-day move minus the chip index's. On a market cap of <b data-draw="cap" data-source="jensen" data-field="value" data-where="metric=cap_usd_tn">—</b> at Friday's close, that is about <b data-draw="abnormal" data-source="jensen" data-field="value" data-where="metric=abnormal_usd_bn">—</b> of underperformance against its peers.</p>
+    </article>
+    <article class="ji-card" id="card-ratio">
+      <h2>Jensen Ratio <span class="ji-tag real">documented memes</span></h2>
+      <div class="ji-big"><span data-draw="ratio" data-source="jensen" data-field="value" data-where="metric=usd_bn_per_meme">—</span><small>per meme</small></div>
+      <p>The day's drop in market value (<b data-draw="headline" data-source="jensen" data-field="value" data-where="metric=headline_usd_bn">—</b>) divided by the <b data-draw="memes" data-source="meme_tally" data-field="value" data-where="key=roundup_memes">—</b> memes in BuzzFeed's roundup. Per documented like, it is <b data-draw="perlike" data-source="jensen" data-field="value" data-where="metric=usd_per_like">—</b>.</p>
+    </article>
+    <article class="ji-card" id="card-index">
+      <h2>Jensen Index <span class="ji-tag real">documented floor</span></h2>
+      <div class="ji-big"><span data-draw="gpuh" data-source="jensen" data-field="value" data-where="metric=gpu_hours">—</span><small>GPU-hours</small></div>
+      <p>Compute behind the AI meme video whose length has been reported: <b data-draw="secs" data-source="meme_tally" data-field="value" data-where="key=ai_video_seconds">—</b> seconds, about <b data-draw="spend" data-source="jensen" data-field="value" data-where="metric=compute_usd">—</b> at list price, which rents an H100 for that long.</p>
+    </article>
+  </section>
+
+  <section class="ji-section" id="spread-chart">
+    <h2>Everyone in chips had a great Monday except one company</h2>
+    <p>Closing moves on November 9. Nvidia is itself the largest member of the chip index, so against the other chip stocks the gap is wider than the Spread shows.</p>
+    <div class="ji-chart" data-draw="moves" data-source="market"></div>
+  </section>
+
+  <section class="ji-section" id="recursion">
+    <h2>The scandal that pays for itself, very slightly</h2>
+    <p>Every AI-generated Jensen meme runs on a GPU, so the fallout is technically demand. On the documented evidence, each dollar of meme compute sits against <b data-draw="perdollar" data-source="jensen" data-field="value" data-where="metric=loss_bn_per_compute_usd">—</b> of lost market value. The documented posts have at least <b data-draw="likes" data-source="jensen" data-field="value" data-where="metric=likes_total">—</b> likes between them.</p>
+    <div class="ji-scroll">
+      <table class="ji-table" id="inputs-table" data-source="meme_tally" data-row-key="key">
+        <thead><tr><th data-field="label">Documented figure</th><th data-field="value">Value</th><th data-field="source">Source</th></tr></thead>
+        <tbody data-draw="inputs"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <details class="ji-foot" id="method">
+    <summary>How each number is worked out, and what not to do with it</summary>
+    <p><b>Spread.</b> Nvidia's closing percentage move minus the Philadelphia Semiconductor Index's. It is a one-day, one-benchmark comparison with no beta adjustment. The stock had also been falling for weeks before the news, so not all of the day's move is the scandal.</p>
+    <p><b>Market value.</b> Shares outstanding from the latest quarterly filing (counted in August) times the closing prices. The share count will have moved a little since.</p>
+    <p><b>Ratio.</b> The day's drop in market value divided by the memes in one published roundup, and by the likes that Know Your Meme reports for four posts. Likes were reported as "over" each figure within a day of posting, so they are floors and already out of date.</p>
+    <p><b>Index.</b> Reported seconds of AI-generated video times a common list price per second, converted to GPU-hours at the H100 rental index price. Other AI clips are circulating without a reported length, and nobody knows how many attempts each took, so the true figure is higher by an unknown amount. Video list prices range from $0.07 to $0.40 a second and were collected in May 2026.</p>
+    <p>This is a joke page, not investment research. None of it is a view on the stock.</p>
+  </details>
+</div>
+<p class="ji-src">Sources: <a href="https://en.sedaily.com/international/2026/11/10/chip-index-jumps-7-percent-on-bargain-hunting-as-nvidia">Seoul Economic Daily</a> · <a href="https://www.sec.gov/Archives/edgar/data/0001045810/000104581026000075/nvda-20260726.htm">Nvidia 10-Q</a> · <a href="https://finance.yahoo.com/markets/article/jensen-huang-just-handed-wall-street-its-first-45-trillion-ceo-scandal-094803359.html">Yahoo Finance</a> · <a href="https://abcnews.com/Business/nvidia-stock-falls-after-company-opens-probe-ceo/story?id=137970524">ABC News</a> · <a href="https://www.fool.com/coverage/stock-market-today/2026/11/09/stock-market-today-nov-9-markets-rally-as-semiconductor-gains-lift-nasdaq/">Motley Fool</a> · <a href="https://knowyourmeme.com/memes/events/nvidia-ceo-jensen-huang-chinese-spy-cheating-controversy">Know Your Meme</a> · <a href="https://www.buzzfeed.com/mariamsharia/jensen-huang-nvidia-ceo-cheating-scandal-memes">BuzzFeed</a> · <a href="https://www.wionews.com/trending/from-kiss-cam-to-dance-clips-ai-videos-mock-nvidia-ceo-jensen-huang-amid-affair-scandal-1794246756469">WION</a> · <a href="https://data.ornn.com/">Ornn Compute Price Index</a> · <a href="https://fluxnote.io/blog/ai-video-generation-pricing-guide-2026">FluxNote</a></p>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+const DATA = {market: [{"key": "nvda_move", "label": "Nvidia", "value": "-4.27", "unit": "pct", "note": "Closing move (CNBC; Seoul Economic Daily)"}, {"key": "sox_move", "label": "Chip index (SOX)", "value": "6.86", "unit": "pct", "note": "Philadelphia Semiconductor Index closing move (Seoul Economic Daily)"}, {"key": "amd_move", "label": "AMD", "value": "13.26", "unit": "pct", "note": "Closing move (Seoul Economic Daily)"}, {"key": "mu_move", "label": "Micron", "value": "6.25", "unit": "pct", "note": "Closing move (Seoul Economic Daily)"}, {"key": "tsm_move", "label": "TSMC", "value": "3.51", "unit": "pct", "note": "Closing move (Seoul Economic Daily)"}, {"key": "nasdaq_move", "label": "Nasdaq Composite", "value": "2.74", "unit": "pct", "note": "Closing move (Motley Fool)"}, {"key": "sp500_move", "label": "S&P 500", "value": "2.35", "unit": "pct", "note": "Closing move (Motley Fool)"}, {"key": "dow_move", "label": "Dow", "value": "2.15", "unit": "pct", "note": "Closing move (Motley Fool)"}, {"key": "nvda_fri_close", "label": "Nvidia close Fri Nov 6", "value": "186.64", "unit": "usd", "note": "Yahoo Finance"}, {"key": "nvda_mon_close", "label": "Nvidia close Mon Nov 9", "value": "178.67", "unit": "usd", "note": "ABC News; Motley Fool"}, {"key": "nvda_shares_bn", "label": "Nvidia shares outstanding", "value": "24.1", "unit": "bn_shares", "note": "Cover of the 10-Q for the quarter ended Jul 26 2026, count as of Aug 21 2026 (SEC)"}], meme_tally: [{"key": "roundup_memes", "label": "Memes in BuzzFeed's roundup", "value": "38", "unit": "memes", "source": "BuzzFeed Nov 9"}, {"key": "likes_ig_comedy", "label": "Likes on an Instagram comedy video (at least)", "value": "220000", "unit": "likes", "source": "Know Your Meme entry Nov 9"}, {"key": "likes_ig_meme", "label": "Likes on an Instagram meme post (at least)", "value": "60000", "unit": "likes", "source": "Know Your Meme entry Nov 9"}, {"key": "likes_x_ai_edit", "label": "Likes on an AI-generated edit on X (at least)", "value": "11000", "unit": "likes", "source": "Know Your Meme entry Nov 9"}, {"key": "likes_x_ai_video", "label": "Likes on an AI-generated video on X (at least)", "value": "3200", "unit": "likes", "source": "Know Your Meme entry Nov 9"}, {"key": "ai_video_seconds", "label": "Seconds of AI-generated video with a reported length", "value": "13", "unit": "seconds", "source": "WION: one kiss-cam clip. Other AI clips are reported without a length."}, {"key": "video_usd_per_s", "label": "List price of AI video generation", "value": "0.10", "unit": "usd_per_second", "source": "FluxNote price guide: common rate; range $0.07 to $0.40. Prices collected May 2026."}, {"key": "h100_usd_per_hr", "label": "H100 rental price", "value": "3.10", "unit": "usd_per_gpu_hour", "source": "Ornn Compute Price Index settled Nov 7 2026"}]};
+const draws = {}, calcs = {};
+const dash = {
+  colors: ['var(--series-1)'],
+  data: (id) => id in calcs ? {status: 'ok', data: calcs[id]()} : {status: id in DATA ? 'ok' : 'missing', data: DATA[id] || []},
+  calc: (id, def) => { calcs[id] = () => def.fn(...def.inputs.map((i) => dash.data(i).data)); },
+  draw: (name, fn) => { draws[name] = fn; },
+};
+function renderAll() { document.querySelectorAll('[data-draw]').forEach((el) => { const fn = draws[el.dataset.draw]; if (fn) fn(el); }); }
+
+  dash.calc('jensen', {
+    inputs: ['market', 'meme_tally'],
+    title: 'Jensen Index arithmetic',
+    description: 'The Spread, the Ratio and the Index, worked out from the closing figures and the documented meme tally.',
+    fn: (market, memeTally) => {
+      if (!market.length || !memeTally.length) return [];
+      const m = Object.fromEntries(market.map((r) => [r.key, +r.value]));
+      const t = Object.fromEntries(memeTally.map((r) => [r.key, +r.value]));
+      const shares = m.nvda_shares_bn * 1e9;
+      const capUsd = shares * m.nvda_fri_close;
+      const headlineUsd = shares * (m.nvda_fri_close - m.nvda_mon_close);
+      const spreadPts = m.nvda_move - m.sox_move;
+      const abnormalUsd = capUsd * -spreadPts / 100;
+      const likes = memeTally.filter((r) => r.unit === 'likes').reduce((sum, r) => sum + +r.value, 0);
+      const computeUsd = t.ai_video_seconds * t.video_usd_per_s;
+      return [
+        {metric: 'spread_pts', value: spreadPts},
+        {metric: 'cap_usd_tn', value: capUsd / 1e12},
+        {metric: 'headline_usd_bn', value: headlineUsd / 1e9},
+        {metric: 'abnormal_usd_bn', value: abnormalUsd / 1e9},
+        {metric: 'usd_bn_per_meme', value: headlineUsd / t.roundup_memes / 1e9},
+        {metric: 'likes_total', value: likes},
+        {metric: 'usd_per_like', value: headlineUsd / likes},
+        {metric: 'compute_usd', value: computeUsd},
+        {metric: 'gpu_hours', value: computeUsd / t.h100_usd_per_hr},
+        {metric: 'loss_bn_per_compute_usd', value: headlineUsd / computeUsd / 1e9},
+      ];
+    },
+  });
+
+  const jiSigned = (d) => (v) => (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v).toFixed(d);
+  const jiFmt = {
+    pct: (v) => jiSigned(2)(v) + '%',
+    pts: (v) => jiSigned(1)(v) + ' points',
+    ptsBare: jiSigned(1),
+    bn: (v) => '$' + d3.format(',.0f')(v) + ' billion',
+    bn1: (v) => '$' + v.toFixed(1) + 'bn',
+    tn: (v) => '$' + v.toFixed(1) + ' trillion',
+    usd2: (v) => '$' + v.toFixed(2),
+    k: (v) => '$' + d3.format(',.0f')(v / 1000) + 'k',
+    num: d3.format(',.0f'),
+    two: (v) => v.toFixed(2),
+  };
+
+  function jiFigure(name, source, pick, fmt) {
+    dash.draw(name, (el) => {
+      const s = dash.data(source);
+      const row = s.status === 'ok' && Array.isArray(s.data) ? s.data.find(pick) : null;
+      const v = row ? +row.value : NaN;
+      el.textContent = Number.isFinite(v) ? fmt(v) : '\u2014';
+    });
+  }
+  const jiM = (metric) => (r) => r.metric === metric;
+  const jiK = (key) => (r) => r.key === key;
+
+  jiFigure('t-nvda', 'market', jiK('nvda_move'), jiFmt.pct);
+  jiFigure('t-sox', 'market', jiK('sox_move'), jiFmt.pct);
+  jiFigure('t-spread', 'jensen', jiM('spread_pts'), jiFmt.pts);
+  jiFigure('spread', 'jensen', jiM('spread_pts'), jiFmt.ptsBare);
+  jiFigure('cap', 'jensen', jiM('cap_usd_tn'), jiFmt.tn);
+  jiFigure('abnormal', 'jensen', jiM('abnormal_usd_bn'), jiFmt.bn);
+  jiFigure('ratio', 'jensen', jiM('usd_bn_per_meme'), jiFmt.bn1);
+  jiFigure('headline', 'jensen', jiM('headline_usd_bn'), jiFmt.bn);
+  jiFigure('memes', 'meme_tally', jiK('roundup_memes'), jiFmt.num);
+  jiFigure('perlike', 'jensen', jiM('usd_per_like'), jiFmt.k);
+  jiFigure('gpuh', 'jensen', jiM('gpu_hours'), jiFmt.two);
+  jiFigure('secs', 'meme_tally', jiK('ai_video_seconds'), jiFmt.num);
+  jiFigure('spend', 'jensen', jiM('compute_usd'), jiFmt.usd2);
+  jiFigure('perdollar', 'jensen', jiM('loss_bn_per_compute_usd'), jiFmt.bn);
+  jiFigure('likes', 'jensen', jiM('likes_total'), jiFmt.num);
+
+  dash.draw('inputs', (tbody) => {
+    const s = dash.data('meme_tally');
+    const rows = s.status === 'ok' ? s.data : [];
+    const fmtVal = (r) => (r.unit.startsWith('usd') ? '$' + (+r.value).toFixed(2) : d3.format(',')(+r.value));
+    tbody.replaceChildren(...rows.map((r) => {
+      const tr = document.createElement('tr');
+      tr.dataset.key = encodeURIComponent(r.key);
+      [[r.label, ''], [fmtVal(r), 'num'], [r.source, 'note']].forEach(([text, cls]) => {
+        const td = document.createElement('td');
+        td.textContent = text;
+        if (cls) td.className = cls;
+        tr.appendChild(td);
+      });
+      return tr;
+    }));
+  });
+
+  dash.draw('moves', (el) => {
+    const s = dash.data('market');
+    if (s.status !== 'ok') {
+      el.replaceChildren();
+      el.textContent = s.status === 'error' ? 'Failed to load' : '—';
+      return;
+    }
+    const rows = s.data.filter((r) => r.unit === 'pct').map((r) => ({key: r.key, label: r.label, v: +r.value, note: r.note})).sort((a, b) => a.v - b.v);
+    el.replaceChildren();
+    const W = Math.max(280, el.clientWidth || 600);
+    const bh = 34, top = 8, H = top + rows.length * bh + 8;
+    const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${W} ${H}`).attr('role', 'img')
+      .attr('aria-label', 'Bar chart of one-day percentage moves on November 9, 2026: Nvidia fell while the chip index, AMD, Micron, TSMC and the broad market indexes rose.');
+    const probe = svg.append('g');
+    let labW = 0, valW = 0;
+    rows.forEach((r) => {
+      labW = Math.max(labW, probe.append('text').attr('class', 'lab').text(r.label).node().getComputedTextLength());
+      valW = Math.max(valW, probe.append('text').attr('class', 'val').text(jiFmt.pct(r.v)).node().getComputedTextLength());
+    });
+    probe.remove();
+    const left = labW + 12 + valW + 8, right = valW + 12;
+    const x = d3.scaleLinear().domain([Math.min(0, d3.min(rows, (r) => r.v)), Math.max(0, d3.max(rows, (r) => r.v))]).range([left, W - right]);
+    const tip = d3.select(el).append('div').attr('class', 'ji-tip').attr('hidden', '');
+    const g = svg.selectAll('g.row').data(rows).join('g').attr('class', 'row').attr('transform', (r, i) => `translate(0,${top + i * bh})`);
+    g.append('text').attr('class', 'lab').attr('x', 0).attr('y', bh / 2).attr('dominant-baseline', 'middle').text((r) => r.label);
+    g.append('rect').attr('x', (r) => Math.min(x(0), x(r.v))).attr('y', 6).attr('height', bh - 12).attr('rx', 2)
+      .attr('width', (r) => Math.max(1, Math.abs(x(r.v) - x(0))))
+      .style('fill', (r) => (r.v < 0 ? 'var(--cds-chart-status-critical)' : dash.colors[0]));
+    g.append('text').attr('class', 'val').attr('y', bh / 2).attr('dominant-baseline', 'middle')
+      .attr('x', (r) => (r.v < 0 ? x(r.v) - 6 : x(r.v) + 6)).attr('text-anchor', (r) => (r.v < 0 ? 'end' : 'start'))
+      .text((r) => jiFmt.pct(r.v));
+    svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top).attr('y2', H - 8).style('stroke', 'var(--cds-chart-axis)');
+    g.append('rect').attr('x', 0).attr('y', 0).attr('width', W).attr('height', bh).style('fill', 'transparent')
+      .on('pointermove pointerdown', (ev, r) => {
+        const box = el.getBoundingClientRect();
+        tip.attr('hidden', null);
+        const node = tip.node();
+        node.replaceChildren();
+        const head = document.createElement('b');
+        head.textContent = r.label + '  ' + jiFmt.pct(r.v);
+        const sub = document.createElement('span');
+        sub.textContent = r.note;
+        node.append(head, sub);
+        const tx = Math.min(Math.max(0, ev.clientX - box.left + 12), box.width - node.offsetWidth - 4);
+        const ty = Math.max(0, ev.clientY - box.top - node.offsetHeight - 10);
+        tip.style('left', tx + 'px').style('top', ty + 'px');
+      })
+      .on('pointerleave', () => tip.attr('hidden', ''));
+  });
+
+renderAll();
+let jiResize; window.addEventListener('resize', () => { clearTimeout(jiResize); jiResize = setTimeout(renderAll, 150); });
+</script>
+</body>
+</html>

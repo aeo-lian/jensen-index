@@ -1,0 +1,12 @@
+key,label,value,unit,note
+nvda_move,Nvidia,-4.27,pct,Closing move (CNBC; Seoul Economic Daily)
+sox_move,Chip index (SOX),6.86,pct,Philadelphia Semiconductor Index closing move (Seoul Economic Daily)
+amd_move,AMD,13.26,pct,Closing move (Seoul Economic Daily)
+mu_move,Micron,6.25,pct,Closing move (Seoul Economic Daily)
+tsm_move,TSMC,3.51,pct,Closing move (Seoul Economic Daily)
+nasdaq_move,Nasdaq Composite,2.74,pct,Closing move (Motley Fool)
+sp500_move,S&P 500,2.35,pct,Closing move (Motley Fool)
+dow_move,Dow,2.15,pct,Closing move (Motley Fool)
+nvda_fri_close,Nvidia close Fri Nov 6,186.64,usd,Yahoo Finance
+nvda_mon_close,Nvidia close Mon Nov 9,178.67,usd,ABC News; Motley Fool
+nvda_shares_bn,Nvidia shares outstanding,24.1,bn_shares,"Cover of the 10-Q for the quarter ended Jul 26 2026, count as of Aug 21 2026 (SEC)"
