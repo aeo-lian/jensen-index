@@ -1,11 +1,10 @@
 # The Jensen Index
 
-A deeply unserious benchmark tracking the fallout from the Nvidia CEO scandal, as of the close on Monday, November 9, 2026.
+The unit of measurement for CEO cheating scandals, coined November 9, 2026. A joke, not investment research.
 
-- **Jensen Spread**: Nvidia's one-day move minus the chip index's.
-- **Jensen Ratio**: market value lost per documented meme.
-- **Jensen Index**: GPU-hours behind the documented AI meme video.
+- **1 Jensen** = 11.1 points behind your sector on the first trading day after the news.
+- **Jensen Spread**: points the stock trailed its sector index that day. Nvidia: -11.1. Real closing prices.
+- **Jensen Ratio**: market value lost per meme. The $192B is real; the 500,000 meme count is a guess.
+- **Jensen Index**: leather jackets of GPU time burned making the memes (1 jacket = 1,000 GPU-hours). Meme counts and attempts are guesses; GPU times and the rental price are sourced.
 
-Open `index.html` in a browser. The inputs are in the two CSV files, each row with its source. Meme figures count only what has been documented, so they are floors.
-
-This is a joke page, not investment research.
+Market inputs and sources are in `market_close.csv`. The guessed inputs are in `index.html`, marked as guesses. Live at https://aeo-lian.github.io/jensen-index/
